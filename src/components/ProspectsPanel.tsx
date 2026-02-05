@@ -1,6 +1,6 @@
 'use client';
 
-import { clients, getPipelineRevenue, getActiveRevenue, getCompletedRevenue } from '@/data/clients';
+import { clients, getCashCollected, getBalanceDue, getPipelineValue, getWaitingOnClientRevenue } from '@/data/clients';
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-NZ', {
@@ -12,48 +12,32 @@ const formatCurrency = (amount: number) => {
 };
 
 export default function ProspectsPanel() {
-  const pipelineClients = clients.filter(c => c.status === 'pipeline');
-  const almostDoneClients = clients.filter(c => c.status === 'almost-complete');
-  const completedClients = clients.filter(c => c.status === 'completed');
+  const cashCollected = getCashCollected();
+  const balanceDue = getBalanceDue();
+  const waitingOnClient = getWaitingOnClientRevenue();
+  const pipelineValue = getPipelineValue();
   
-  const pipelineValue = getPipelineRevenue();
-  const almostDoneValue = clients.filter(c => c.status === 'almost-complete').reduce((sum, c) => sum + c.revenue, 0);
-  const completedValue = getCompletedRevenue();
+  // Q1 2026 target (cash collected)
+  const q1Target = 25000;
+  const q1Percentage = Math.min(100, Math.round((cashCollected / q1Target) * 100));
   
-  // Q1 2026 target
-  const q1Target = 30000;
-  const q1Progress = completedValue + almostDoneValue;
-  const q1Percentage = Math.min(100, Math.round((q1Progress / q1Target) * 100));
+  // Money to chase
+  const toChase = waitingOnClient;
   
-  // Close rate: completed out of (completed + almost-done)
-  const closeRate = completedClients.length + almostDoneClients.length > 0 
-    ? Math.round((completedClients.length / (completedClients.length + almostDoneClients.length)) * 100) 
-    : 0;
+  const completedProjects = clients.filter(c => c.projectStatus === 'completed').length;
+  const waitingProjects = clients.filter(c => c.projectStatus === 'waiting-on-client').length;
+  const leads = clients.filter(c => c.paymentStatus === 'unpaid');
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 h-full">
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="text-lg font-semibold text-gray-900">🎯 Goals</h2>
-      </div>
+      <h2 className="text-lg font-semibold text-gray-900 mb-5">🎯 Goals & Actions</h2>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 gap-3 mb-5">
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-3 border border-green-100">
-          <span className="text-xs text-green-600 font-medium">Close Rate</span>
-          <p className="text-xl font-bold text-green-700">{closeRate}%</p>
-        </div>
-        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-3 border border-purple-100">
-          <span className="text-xs text-purple-600 font-medium">Leads</span>
-          <p className="text-xl font-bold text-purple-700">{pipelineClients.length}</p>
-        </div>
-      </div>
-
-      {/* Q1 Target Progress */}
+      {/* Q1 Cash Target */}
       <div className="mb-5">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700">Q1 Target</span>
+          <span className="text-sm font-medium text-gray-700">Q1 Cash Target</span>
           <span className="text-xs text-gray-500">
-            {formatCurrency(q1Progress)} / {formatCurrency(q1Target)}
+            {formatCurrency(cashCollected)} / {formatCurrency(q1Target)}
           </span>
         </div>
         <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
@@ -63,52 +47,57 @@ export default function ProspectsPanel() {
                 ? 'bg-gradient-to-r from-green-400 to-emerald-500'
                 : q1Percentage >= 75
                 ? 'bg-gradient-to-r from-blue-400 to-cyan-500'
-                : 'bg-gradient-to-r from-purple-400 to-violet-500'
+                : 'bg-gradient-to-r from-violet-400 to-purple-500'
             }`}
             style={{ width: `${q1Percentage}%` }}
           />
         </div>
-        <div className="flex justify-between mt-1">
-          <span className="text-xs text-gray-500">{q1Percentage}%</span>
-          {q1Percentage >= 100 && <span className="text-xs text-green-600 font-medium">🎉 Hit!</span>}
-        </div>
+        <span className="text-xs text-gray-500">{q1Percentage}% collected</span>
       </div>
 
-      {/* Hot Leads */}
-      {pipelineClients.length > 0 && (
-        <div>
-          <h3 className="text-sm font-medium text-gray-600 mb-3">🔥 Hot Leads</h3>
-          <div className="space-y-2">
-            {pipelineClients.map((client, idx) => (
-              <div
-                key={client.id}
-                className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-100"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white text-xs font-bold">
-                    {idx + 1}
-                  </div>
-                  <p className="font-medium text-gray-900 text-sm">{client.name}</p>
-                </div>
-                <p className="font-semibold text-purple-700 text-sm">{formatCurrency(client.revenue)}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-3 pt-3 border-t border-gray-100">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Lead Value</span>
-              <span className="font-semibold text-purple-700">{formatCurrency(pipelineValue)}</span>
+      {/* Money to Chase */}
+      {toChase > 0 && (
+        <div className="mb-5 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-amber-600 font-medium">💸 To Collect</p>
+              <p className="text-2xl font-bold text-amber-700">{formatCurrency(toChase)}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-amber-600">{waitingProjects} projects</p>
+              <p className="text-xs text-amber-500">waiting on client</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Achievement */}
-      {completedClients.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-            🏆 {completedClients.length} project{completedClients.length > 1 ? 's' : ''} shipped!
-          </span>
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 gap-3 mb-5">
+        <div className="bg-green-50 rounded-xl p-3 border border-green-100 text-center">
+          <p className="text-2xl font-bold text-green-700">{completedProjects}</p>
+          <p className="text-xs text-green-600">Shipped</p>
+        </div>
+        <div className="bg-purple-50 rounded-xl p-3 border border-purple-100 text-center">
+          <p className="text-2xl font-bold text-purple-700">{leads.length}</p>
+          <p className="text-xs text-purple-600">Leads</p>
+        </div>
+      </div>
+
+      {/* Pipeline Value */}
+      {pipelineValue > 0 && (
+        <div className="p-3 bg-purple-50 border border-purple-200 rounded-xl">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-purple-600">Pipeline Value</span>
+            <span className="font-bold text-purple-700">{formatCurrency(pipelineValue)}</span>
+          </div>
+          <div className="mt-2 space-y-1">
+            {leads.map((lead) => (
+              <div key={lead.id} className="flex justify-between text-xs">
+                <span className="text-gray-600">{lead.name}</span>
+                <span className="text-purple-600">{formatCurrency(lead.totalRevenue)}</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

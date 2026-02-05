@@ -1,6 +1,6 @@
 'use client';
 
-import { clients, getTotalRevenue, getActiveRevenue, getCompletedRevenue, getPipelineRevenue } from '@/data/clients';
+import { clients, getCashCollected, getBalanceDue, getTotalContractValue, getPipelineValue, getWaitingOnClientRevenue } from '@/data/clients';
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-NZ', {
@@ -12,44 +12,46 @@ const formatCurrency = (amount: number) => {
 };
 
 export default function SummaryCards() {
-  const completedClients = clients.filter(c => c.status === 'completed').length;
-  const almostCompleteClients = clients.filter(c => c.status === 'almost-complete').length;
-  const activeClients = clients.filter(c => c.status === 'active').length;
-  const pipelineClients = clients.filter(c => c.status === 'pipeline').length;
+  const cashCollected = getCashCollected();
+  const balanceDue = getBalanceDue();
+  const waitingOnClient = getWaitingOnClientRevenue();
+  const pipelineValue = getPipelineValue();
   
-  const almostCompleteRevenue = clients.filter(c => c.status === 'almost-complete').reduce((sum, c) => sum + c.revenue, 0);
-  const activeOnlyRevenue = clients.filter(c => c.status === 'active').reduce((sum, c) => sum + c.revenue, 0);
+  const paidProjects = clients.filter(c => c.paymentStatus === 'paid-in-full').length;
+  const waitingProjects = clients.filter(c => c.projectStatus === 'waiting-on-client').length;
+  const activeProjects = clients.filter(c => c.projectStatus === 'active' && c.paymentStatus !== 'unpaid').length;
+  const leads = clients.filter(c => c.paymentStatus === 'unpaid').length;
 
   const cards = [
     {
-      label: 'Total 2026',
-      value: formatCurrency(getTotalRevenue()),
-      subtext: `${clients.length} projects`,
-      color: 'bg-gradient-to-br from-violet-500 to-purple-600',
-    },
-    {
-      label: 'Completed',
-      value: formatCurrency(getCompletedRevenue()),
-      subtext: `${completedClients} done`,
+      label: '💰 Cash Collected',
+      value: formatCurrency(cashCollected),
+      subtext: 'In the bank',
       color: 'bg-gradient-to-br from-emerald-500 to-green-600',
     },
     {
-      label: 'Almost Done',
-      value: formatCurrency(almostCompleteRevenue),
-      subtext: `${almostCompleteClients} wrapping up`,
+      label: '⏳ Balance Due',
+      value: formatCurrency(waitingOnClient),
+      subtext: `${waitingProjects} waiting on client`,
       color: 'bg-gradient-to-br from-amber-500 to-yellow-600',
     },
     {
-      label: 'Active',
-      value: formatCurrency(activeOnlyRevenue),
-      subtext: `${activeClients} in progress`,
+      label: '🔵 Active Work',
+      value: formatCurrency(clients.filter(c => c.projectStatus === 'active' && c.paymentStatus === 'deposit-paid').reduce((s,c) => s + c.totalRevenue, 0)),
+      subtext: `${activeProjects} in progress`,
       color: 'bg-gradient-to-br from-blue-500 to-cyan-600',
     },
     {
-      label: 'Leads',
-      value: formatCurrency(getPipelineRevenue()),
-      subtext: `${pipelineClients} prospects`,
-      color: 'bg-gradient-to-br from-pink-500 to-rose-600',
+      label: '🟣 Pipeline',
+      value: formatCurrency(pipelineValue),
+      subtext: `${leads} leads`,
+      color: 'bg-gradient-to-br from-purple-500 to-violet-600',
+    },
+    {
+      label: '📊 Total 2026',
+      value: formatCurrency(getTotalContractValue()),
+      subtext: `${clients.length} projects`,
+      color: 'bg-gradient-to-br from-gray-700 to-gray-900',
     },
   ];
 

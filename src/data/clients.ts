@@ -1,156 +1,195 @@
-export type ClientStatus = 'active' | 'completed' | 'almost-complete' | 'pipeline';
+export type ProjectStatus = 'active' | 'waiting-on-client' | 'completed';
+export type PaymentStatus = 'unpaid' | 'deposit-paid' | 'paid-in-full';
 
 export interface Client {
   id: string;
   name: string;
-  status: ClientStatus;
-  revenue: number;
+  projectStatus: ProjectStatus;
+  paymentStatus: PaymentStatus;
+  totalRevenue: number;
+  depositPaid: number;
+  balanceDue: number;
   currency: 'NZD' | 'AUD';
   startDate: string;
-  endDate?: string;
+  completedDate?: string;
   projectType: 'landing-page' | 'full-site' | 'maintenance' | 'redesign';
   source: string;
   notes?: string;
+  blockedBy?: string; // What we're waiting on
 }
 
 // 2026 Client Data
 export const clients: Client[] = [
-  // January - Completed/Almost Complete
+  // Completed & Paid
   {
     id: '1',
     name: 'Ascension RCA',
-    status: 'completed',
-    revenue: 7500,
+    projectStatus: 'completed',
+    paymentStatus: 'paid-in-full',
+    totalRevenue: 7500,
+    depositPaid: 3750,
+    balanceDue: 0,
     currency: 'NZD',
     startDate: '2026-01-01',
-    endDate: '2026-01-31',
+    completedDate: '2026-01-31',
     projectType: 'full-site',
     source: 'Sea Salt',
-    notes: 'Finished'
+    notes: 'Finished & paid'
   },
+  // Waiting on Client - Deposit Paid
   {
     id: '2',
     name: 'Jimmy Bull Construction',
-    status: 'almost-complete',
-    revenue: 7500,
+    projectStatus: 'waiting-on-client',
+    paymentStatus: 'deposit-paid',
+    totalRevenue: 7500,
+    depositPaid: 3750,
+    balanceDue: 3750,
     currency: 'NZD',
     startDate: '2026-01-10',
     projectType: 'full-site',
     source: 'Sea Salt',
-    notes: 'Almost Complete'
+    notes: 'Pending final 50%',
+    blockedBy: 'Client logins, domain access, final assets'
   },
   {
     id: '3',
     name: 'Procon',
-    status: 'almost-complete',
-    revenue: 2500,
+    projectStatus: 'waiting-on-client',
+    paymentStatus: 'deposit-paid',
+    totalRevenue: 2500,
+    depositPaid: 1250,
+    balanceDue: 1250,
     currency: 'NZD',
     startDate: '2026-01-15',
     projectType: 'landing-page',
     source: 'Sea Salt',
-    notes: 'Almost Complete'
+    notes: 'Pending final 50%',
+    blockedBy: 'Client logins, domain access, final assets'
   },
+  // Paid in Full - Waiting on Content
   {
     id: '4',
     name: 'Jay Lash',
-    status: 'almost-complete',
-    revenue: 2500,
+    projectStatus: 'waiting-on-client',
+    paymentStatus: 'paid-in-full',
+    totalRevenue: 2500,
+    depositPaid: 2500,
+    balanceDue: 0,
     currency: 'NZD',
     startDate: '2026-01-20',
     projectType: 'landing-page',
     source: 'Sea Salt',
-    notes: 'Feb completion'
+    notes: 'Paid in full',
+    blockedBy: 'Waiting on content from client'
   },
   // Active
   {
     id: '5',
     name: "Let's Go Website",
-    status: 'active',
-    revenue: 8750,
+    projectStatus: 'active',
+    paymentStatus: 'deposit-paid',
+    totalRevenue: 8750,
+    depositPaid: 4375,
+    balanceDue: 4375,
     currency: 'AUD',
     startDate: '2026-02-01',
     projectType: 'full-site',
     source: 'Direct',
-    notes: '$8750 AUD'
+    notes: '$8750 AUD total'
   },
-  // Leads / Pipeline
+  // Leads / Pipeline (no payment yet)
   {
     id: '6',
     name: 'Ben Roofing',
-    status: 'pipeline',
-    revenue: 750,
+    projectStatus: 'active',
+    paymentStatus: 'unpaid',
+    totalRevenue: 750,
+    depositPaid: 0,
+    balanceDue: 750,
     currency: 'NZD',
     startDate: '2026-02-15',
     projectType: 'landing-page',
     source: 'Lead',
-    notes: 'Landing Page'
+    notes: 'Prospect'
   },
   {
     id: '7',
     name: 'Ben Cladding',
-    status: 'pipeline',
-    revenue: 750,
+    projectStatus: 'active',
+    paymentStatus: 'unpaid',
+    totalRevenue: 750,
+    depositPaid: 0,
+    balanceDue: 750,
     currency: 'NZD',
     startDate: '2026-02-15',
     projectType: 'landing-page',
     source: 'Lead',
-    notes: 'Landing Page'
+    notes: 'Prospect'
   },
   {
     id: '8',
     name: 'Sam - Pacman Trees',
-    status: 'pipeline',
-    revenue: 1500,
+    projectStatus: 'active',
+    paymentStatus: 'unpaid',
+    totalRevenue: 1500,
+    depositPaid: 0,
+    balanceDue: 1500,
     currency: 'NZD',
     startDate: '2026-02-20',
     projectType: 'landing-page',
     source: 'Lead',
-    notes: 'Landing Page'
+    notes: 'Prospect'
   }
 ];
 
-export function getClientsByStatus(status: ClientStatus): Client[] {
-  return clients.filter(c => c.status === status);
+// Revenue calculations
+export function getCashCollected(): number {
+  return clients.reduce((sum, c) => sum + c.depositPaid, 0);
 }
 
-export function getTotalRevenue(): number {
-  return clients.reduce((sum, c) => sum + c.revenue, 0);
+export function getBalanceDue(): number {
+  return clients.reduce((sum, c) => sum + c.balanceDue, 0);
 }
 
-export function getCompletedRevenue(): number {
-  return clients.filter(c => c.status === 'completed').reduce((sum, c) => sum + c.revenue, 0);
+export function getTotalContractValue(): number {
+  return clients.reduce((sum, c) => sum + c.totalRevenue, 0);
 }
 
-export function getActiveRevenue(): number {
-  return clients.filter(c => c.status === 'active' || c.status === 'almost-complete').reduce((sum, c) => sum + c.revenue, 0);
+export function getPipelineValue(): number {
+  return clients.filter(c => c.paymentStatus === 'unpaid').reduce((sum, c) => sum + c.totalRevenue, 0);
 }
 
-export function getPipelineRevenue(): number {
-  return clients.filter(c => c.status === 'pipeline').reduce((sum, c) => sum + c.revenue, 0);
+export function getWaitingOnClientRevenue(): number {
+  return clients.filter(c => c.projectStatus === 'waiting-on-client' && c.balanceDue > 0).reduce((sum, c) => sum + c.balanceDue, 0);
 }
 
-export function getMonthlyRevenue(): { month: string; revenue: number; cumulative: number }[] {
-  const months: { [key: string]: number } = {};
+export function getClientsByStatus(status: ProjectStatus): Client[] {
+  return clients.filter(c => c.projectStatus === status);
+}
+
+export function getMonthlyRevenue(): { month: string; collected: number; pending: number }[] {
+  const months: { [key: string]: { collected: number; pending: number } } = {};
   
   clients.forEach(client => {
-    if (client.status === 'completed' || client.status === 'active' || client.status === 'almost-complete') {
-      const date = new Date(client.startDate);
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      months[monthKey] = (months[monthKey] || 0) + client.revenue;
+    const date = new Date(client.startDate);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    if (!months[monthKey]) {
+      months[monthKey] = { collected: 0, pending: 0 };
     }
+    months[monthKey].collected += client.depositPaid;
+    months[monthKey].pending += client.balanceDue;
   });
 
   const sortedMonths = Object.keys(months).sort();
-  let cumulative = 0;
   
   return sortedMonths.map(month => {
-    cumulative += months[month];
     const [year, m] = month.split('-');
     const monthName = new Date(parseInt(year), parseInt(m) - 1).toLocaleDateString('en-NZ', { month: 'short', year: '2-digit' });
     return {
       month: monthName,
-      revenue: months[month],
-      cumulative
+      collected: months[month].collected,
+      pending: months[month].pending
     };
   });
 }
