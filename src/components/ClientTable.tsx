@@ -3,10 +3,10 @@
 import { clients, Client, ClientStatus } from '@/data/clients';
 import { format } from 'date-fns';
 
-const formatCurrency = (amount: number) => {
+const formatCurrency = (amount: number, currency: 'NZD' | 'AUD' = 'NZD') => {
   return new Intl.NumberFormat('en-NZ', {
     style: 'currency',
-    currency: 'NZD',
+    currency: currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
@@ -15,8 +15,15 @@ const formatCurrency = (amount: number) => {
 const statusColors: Record<ClientStatus, string> = {
   active: 'bg-blue-100 text-blue-800',
   completed: 'bg-green-100 text-green-800',
-  'on-hold': 'bg-yellow-100 text-yellow-800',
+  'almost-complete': 'bg-yellow-100 text-yellow-800',
   pipeline: 'bg-purple-100 text-purple-800',
+};
+
+const statusLabels: Record<ClientStatus, string> = {
+  active: 'Active',
+  completed: 'Completed',
+  'almost-complete': 'Almost Done',
+  pipeline: 'Lead',
 };
 
 const projectTypeLabels: Record<Client['projectType'], string> = {
@@ -28,14 +35,14 @@ const projectTypeLabels: Record<Client['projectType'], string> = {
 
 export default function ClientTable() {
   const sortedClients = [...clients].sort((a, b) => {
-    const statusOrder: Record<ClientStatus, number> = { active: 0, pipeline: 1, 'on-hold': 2, completed: 3 };
+    const statusOrder: Record<ClientStatus, number> = { 'almost-complete': 0, active: 1, pipeline: 2, completed: 3 };
     return statusOrder[a.status] - statusOrder[b.status];
   });
 
   return (
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-900">Client Projects</h2>
+        <h2 className="text-lg font-semibold text-gray-900">2026 Client Projects</h2>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
@@ -74,16 +81,19 @@ export default function ClientTable() {
                 </td>
                 <td className="px-6 py-4">
                   <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${statusColors[client.status]}`}
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[client.status]}`}
                   >
-                    {client.status}
+                    {statusLabels[client.status]}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
                   {projectTypeLabels[client.projectType]}
                 </td>
                 <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                  {formatCurrency(client.revenue)}
+                  {formatCurrency(client.revenue, client.currency)}
+                  {client.currency === 'AUD' && (
+                    <span className="ml-1 text-xs text-gray-400">AUD</span>
+                  )}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
                   {format(new Date(client.startDate), 'MMM d, yyyy')}

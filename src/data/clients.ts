@@ -1,10 +1,11 @@
-export type ClientStatus = 'active' | 'completed' | 'on-hold' | 'pipeline';
+export type ClientStatus = 'active' | 'completed' | 'almost-complete' | 'pipeline';
 
 export interface Client {
   id: string;
   name: string;
   status: ClientStatus;
   revenue: number;
+  currency: 'NZD' | 'AUD';
   startDate: string;
   endDate?: string;
   projectType: 'landing-page' | 'full-site' | 'maintenance' | 'redesign';
@@ -12,110 +13,99 @@ export interface Client {
   notes?: string;
 }
 
-// Seeded from Notion pipeline data
+// 2026 Client Data
 export const clients: Client[] = [
+  // January - Completed/Almost Complete
   {
     id: '1',
-    name: 'DW Homes',
-    status: 'active',
+    name: 'Ascension RCA',
+    status: 'completed',
     revenue: 7500,
-    startDate: '2025-11-15',
+    currency: 'NZD',
+    startDate: '2026-01-01',
+    endDate: '2026-01-31',
     projectType: 'full-site',
     source: 'Sea Salt',
-    notes: 'Full website build'
+    notes: 'Finished'
   },
   {
     id: '2',
-    name: 'Ramsay Builders',
-    status: 'active',
+    name: 'Jimmy Bull Construction',
+    status: 'almost-complete',
     revenue: 7500,
-    startDate: '2025-12-01',
+    currency: 'NZD',
+    startDate: '2026-01-10',
     projectType: 'full-site',
     source: 'Sea Salt',
-    notes: 'Website redesign'
+    notes: 'Almost Complete'
   },
   {
     id: '3',
-    name: 'GK Construction',
-    status: 'active',
+    name: 'Procon',
+    status: 'almost-complete',
     revenue: 2500,
-    startDate: '2026-01-10',
+    currency: 'NZD',
+    startDate: '2026-01-15',
     projectType: 'landing-page',
     source: 'Sea Salt',
-    notes: 'Landing page'
+    notes: 'Almost Complete'
   },
   {
     id: '4',
-    name: 'RODA Development',
-    status: 'pipeline',
-    revenue: 7500,
-    startDate: '2026-02-01',
-    projectType: 'full-site',
-    source: 'Sea Salt',
-    notes: 'Pending proposal'
-  },
-  {
-    id: '5',
-    name: 'Christou Homes',
-    status: 'active',
-    revenue: 7500,
-    startDate: '2025-10-20',
-    endDate: '2026-01-15',
-    projectType: 'full-site',
-    source: 'Sea Salt',
-    notes: 'Website build - near completion'
-  },
-  {
-    id: '6',
-    name: 'Sheridan Building',
-    status: 'completed',
-    revenue: 7500,
-    startDate: '2025-08-01',
-    endDate: '2025-11-30',
-    projectType: 'full-site',
-    source: 'Sea Salt',
-    notes: 'Completed'
-  },
-  {
-    id: '7',
-    name: 'AVK Homes',
-    status: 'pipeline',
-    revenue: 7500,
-    startDate: '2026-02-15',
-    projectType: 'full-site',
-    source: 'Sea Salt',
-    notes: 'In discussion'
-  },
-  {
-    id: '8',
-    name: 'PROCON',
-    status: 'active',
+    name: 'Jay Lash',
+    status: 'almost-complete',
     revenue: 2500,
+    currency: 'NZD',
     startDate: '2026-01-20',
     projectType: 'landing-page',
     source: 'Sea Salt',
-    notes: 'Landing page build'
+    notes: 'Feb completion'
   },
+  // Active
   {
-    id: '9',
-    name: 'Hammond Homes',
-    status: 'pipeline',
-    revenue: 7500,
-    startDate: '2026-03-01',
+    id: '5',
+    name: "Let's Go Website",
+    status: 'active',
+    revenue: 8750,
+    currency: 'AUD',
+    startDate: '2026-02-01',
     projectType: 'full-site',
-    source: 'Sea Salt',
-    notes: 'Q1 prospect'
+    source: 'Direct',
+    notes: '$8750 AUD'
+  },
+  // Leads / Pipeline
+  {
+    id: '6',
+    name: 'Ben Roofing',
+    status: 'pipeline',
+    revenue: 750,
+    currency: 'NZD',
+    startDate: '2026-02-15',
+    projectType: 'landing-page',
+    source: 'Lead',
+    notes: 'Landing Page'
   },
   {
-    id: '10',
-    name: 'Boutique Constructions',
-    status: 'completed',
-    revenue: 2500,
-    startDate: '2025-09-15',
-    endDate: '2025-10-30',
+    id: '7',
+    name: 'Ben Cladding',
+    status: 'pipeline',
+    revenue: 750,
+    currency: 'NZD',
+    startDate: '2026-02-15',
     projectType: 'landing-page',
-    source: 'Direct',
-    notes: 'Referral client'
+    source: 'Lead',
+    notes: 'Landing Page'
+  },
+  {
+    id: '8',
+    name: 'Sam - Pacman Trees',
+    status: 'pipeline',
+    revenue: 1500,
+    currency: 'NZD',
+    startDate: '2026-02-20',
+    projectType: 'landing-page',
+    source: 'Lead',
+    notes: 'Landing Page'
   }
 ];
 
@@ -132,7 +122,7 @@ export function getCompletedRevenue(): number {
 }
 
 export function getActiveRevenue(): number {
-  return clients.filter(c => c.status === 'active').reduce((sum, c) => sum + c.revenue, 0);
+  return clients.filter(c => c.status === 'active' || c.status === 'almost-complete').reduce((sum, c) => sum + c.revenue, 0);
 }
 
 export function getPipelineRevenue(): number {
@@ -143,7 +133,7 @@ export function getMonthlyRevenue(): { month: string; revenue: number; cumulativ
   const months: { [key: string]: number } = {};
   
   clients.forEach(client => {
-    if (client.status === 'completed' || client.status === 'active') {
+    if (client.status === 'completed' || client.status === 'active' || client.status === 'almost-complete') {
       const date = new Date(client.startDate);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       months[monthKey] = (months[monthKey] || 0) + client.revenue;
