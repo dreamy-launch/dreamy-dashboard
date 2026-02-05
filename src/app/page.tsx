@@ -2,6 +2,7 @@ import SummaryCards from '@/components/SummaryCards';
 import ClientTable from '@/components/ClientTable';
 import RevenueChart from '@/components/RevenueChart';
 import ProjectTimeline from '@/components/ProjectTimeline';
+import ProspectsPanel from '@/components/ProspectsPanel';
 
 export default function Dashboard() {
   return (
@@ -38,13 +39,16 @@ export default function Dashboard() {
           <SummaryCards />
         </section>
 
-        {/* Charts and Timeline Row */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div className="lg:col-span-2">
+        {/* Charts, Timeline, and Prospects Row */}
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+          <div className="lg:col-span-5">
             <RevenueChart />
           </div>
-          <div>
+          <div className="lg:col-span-4">
             <ProjectTimeline />
+          </div>
+          <div className="lg:col-span-3">
+            <ProspectsPanel />
           </div>
         </section>
 
