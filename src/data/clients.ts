@@ -42,14 +42,14 @@ export const clients: Client[] = [
     name: 'Jimmy Bull Construction',
     projectStatus: 'waiting-on-client',
     paymentStatus: 'deposit-paid',
-    totalRevenue: 7500,
-    depositPaid: 3750,
-    balanceDue: 3750,
+    totalRevenue: 8175,
+    depositPaid: 4088,
+    balanceDue: 4087,
     currency: 'NZD',
     startDate: '2026-01-10',
     projectType: 'full-site',
     source: 'Sea Salt',
-    notes: 'Pending final 50%',
+    notes: 'Originally $7,500 AUD. Pending final 50%',
     blockedBy: 'Client logins, domain access, final assets'
   },
   {
@@ -57,14 +57,14 @@ export const clients: Client[] = [
     name: 'Procon',
     projectStatus: 'waiting-on-client',
     paymentStatus: 'deposit-paid',
-    totalRevenue: 2500,
-    depositPaid: 1250,
-    balanceDue: 1250,
+    totalRevenue: 2725,
+    depositPaid: 1363,
+    balanceDue: 1362,
     currency: 'NZD',
     startDate: '2026-01-15',
     projectType: 'landing-page',
     source: 'Sea Salt',
-    notes: 'Pending final 50%',
+    notes: 'Originally $2,500 AUD. Pending final 50%',
     blockedBy: 'Client logins, domain access, final assets'
   },
   // Paid in Full - Waiting on Content
@@ -89,14 +89,14 @@ export const clients: Client[] = [
     name: "Let's Go Website",
     projectStatus: 'active',
     paymentStatus: 'deposit-paid',
-    totalRevenue: 8750,
-    depositPaid: 4375,
-    balanceDue: 4375,
-    currency: 'AUD',
+    totalRevenue: 9538,
+    depositPaid: 4769,
+    balanceDue: 4769,
+    currency: 'NZD',
     startDate: '2026-02-01',
     projectType: 'full-site',
-    source: 'Direct',
-    notes: '$8750 AUD total'
+    source: 'House of Mood',
+    notes: 'Originally $8,750 AUD'
   },
   // Leads / Pipeline (no payment yet)
   {
