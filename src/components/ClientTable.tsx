@@ -26,12 +26,14 @@ const projectStatusLabels: Record<ProjectStatus, string> = {
 
 const paymentStatusColors: Record<PaymentStatus, string> = {
   'unpaid': 'bg-gray-100 text-gray-600',
+  'deposit-pending': 'bg-purple-100 text-purple-800',
   'deposit-paid': 'bg-orange-100 text-orange-800',
   'paid-in-full': 'bg-green-100 text-green-800',
 };
 
 const paymentStatusLabels: Record<PaymentStatus, string> = {
   'unpaid': 'Lead',
+  'deposit-pending': 'Awaiting Dep',
   'deposit-paid': '50% Paid',
   'paid-in-full': 'Paid ✓',
 };

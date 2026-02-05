@@ -1,5 +1,5 @@
 export type ProjectStatus = 'active' | 'waiting-on-client' | 'completed';
-export type PaymentStatus = 'unpaid' | 'deposit-paid' | 'paid-in-full';
+export type PaymentStatus = 'unpaid' | 'deposit-pending' | 'deposit-paid' | 'paid-in-full';
 
 export interface Client {
   id: string;
@@ -88,15 +88,15 @@ export const clients: Client[] = [
     id: '5',
     name: "Let's Go Website",
     projectStatus: 'active',
-    paymentStatus: 'deposit-paid',
+    paymentStatus: 'deposit-pending',
     totalRevenue: 9538,
-    depositPaid: 4769,
-    balanceDue: 4769,
+    depositPaid: 0,
+    balanceDue: 9538,
     currency: 'NZD',
     startDate: '2026-02-01',
     projectType: 'full-site',
     source: 'House of Mood',
-    notes: 'Originally $8,750 AUD'
+    notes: 'Originally $8,750 AUD. Awaiting deposit.'
   },
   // Leads / Pipeline (no payment yet)
   {
@@ -158,6 +158,10 @@ export function getTotalContractValue(): number {
 
 export function getPipelineValue(): number {
   return clients.filter(c => c.paymentStatus === 'unpaid').reduce((sum, c) => sum + c.totalRevenue, 0);
+}
+
+export function getConfirmedPendingDeposit(): number {
+  return clients.filter(c => c.paymentStatus === 'deposit-pending').reduce((sum, c) => sum + c.totalRevenue, 0);
 }
 
 export function getWaitingOnClientRevenue(): number {
